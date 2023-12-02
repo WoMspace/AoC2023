@@ -1,7 +1,11 @@
 use std::{env, fs};
+use std::time::Instant;
 
 fn main() {
     println!("Day 02 | Rust");
+
+    let now = Instant::now();
+
     let path = env::args().nth(1).expect("Missing required argument");
     // println!("Path: {}", path);
     let input = fs::read_to_string(path).expect("Error reading file");
@@ -20,12 +24,12 @@ fn main() {
         for draw in &game.draws {
             if draw.red > 12 || draw.green > 13 || draw.blue > 14 {
                 // game breaks limits
-                println!("Game {}: Invalid", game.id);
+                // println!("Game {}: Invalid", game.id);
                 continue 'games
             }
         }
 
-        println!("Game {}: Valid", game.id);
+        // println!("Game {}: Valid", game.id);
         total_ids += game.id
     }
 
@@ -40,9 +44,11 @@ fn main() {
         }
         total_power += red * green * blue;
     }
+    let duration = now.elapsed().as_micros();
 
     println!("Sum of IDs: {total_ids}");
-    println!("Sum of Power: {total_power}")
+    println!("Sum of Power: {total_power}");
+    println!("Took {duration}µs")
 }
 
 struct Game {
