@@ -9,7 +9,7 @@ fn main() {
     let now = Instant::now();
 
     // parse games
-    let mut games: Vec<Game> = Vec::new();
+    let mut cards: Vec<Game> = Vec::new();
     for line in input.split('\n') {
         if line.is_empty() { continue }
         // Game X: XX XX XX XX XX | XX XX XX XX XX XX XX XX
@@ -19,36 +19,64 @@ fn main() {
         let winning_numbers = get_numbers(first_half.to_string());
         let have_numbers = get_numbers(second_half.to_string());
 
-        games.push(Game { id, winning_numbers, have_numbers, points: 0 })
+        cards.push(Game { id, winning_numbers, have_numbers, matches: 0 })
     }
 
     // get wins
     let mut total_points: usize = 0;
-    for mut game in games {
+    for game in &mut cards {
         let mut matches = 0;
-        for num in game.winning_numbers {
+        for num in &game.winning_numbers {
             if game.have_numbers.contains(&num) {
                 matches += 1;
             }
         }
         if matches > 0 {
-            game.points = usize::pow(2, matches - 1);
-            total_points += game.points
+            game.matches = matches;
+            total_points += usize::pow(2, matches as u32 - 1)
         }
 
         // println!("Game {}: {} points", game.id, game.points)
     }
 
-    let time = now.elapsed().as_micros();
+    let part1_time = now.elapsed().as_micros();
+    let now = Instant::now();
+
+    // infinite cards trick that big gambling doesn't want you to know
+    let mut games: Vec<Game> = cards.clone();
+    let mut i = 0;
+    loop {
+        let game = &games[i];
+        if game.matches > 0 {
+            // add more copies of cards into `games`
+            let start = game.id;
+            let end = game.id + game.matches;
+            for j in start..end {
+                let new_card = cards[j].clone();
+                games.push(new_card);
+                // println!("Card {i}[id:{start}] added card {}", cards[j].id)
+            }
+
+        }
+        i += 1;
+        if i >= games.len() { break }
+    }
+    let total_cards = games.len();
+    let part2_time = now.elapsed().as_millis();
+
+
     println!("Total points: {total_points}");
-    println!("Took {time}µs");
+    println!("Took {part1_time}µs");
+    println!("Total cards: {total_cards}");
+    println!("Took {part2_time}ms");
 }
 
+#[derive(Clone)]
 struct Game {
     id: usize,
     winning_numbers: Vec<usize>,
     have_numbers: Vec<usize>,
-    points: usize
+    matches: usize
 }
 
 fn get_game_id(line: &str) -> usize {
